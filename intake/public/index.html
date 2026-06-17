@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CO-B. · Vamos montar sua proposta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05070E;
+    --card:#0C0E15;
+    --card-hover:#11141F;
+    --line:#1B1F2C;
+    --line-strong:#2A3142;
+    --blue:#2D6BFF;
+    --blue-bright:#4D86FF;
+    --blue-deep:#1E54E0;
+    --blue-soft:rgba(45,107,255,.14);
+    --green:#34D85A;
+    --green-soft:rgba(52,216,90,.13);
+    --text:#F4F6FB;
+    --text-soft:#9AA1B4;
+    --text-dim:#646A7D;
+    --r:16px;
+    --ease:cubic-bezier(.32,.72,.3,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:"Inter Tight",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;overflow:hidden;
+  }
+  /* ambient electric glow — breathes slowly */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(70% 55% at 88% 4%, rgba(45,107,255,.30), transparent 60%),
+      radial-gradient(60% 50% at 6% 102%, rgba(45,107,255,.12), transparent 55%);
+    animation:breathe 9s ease-in-out infinite;
+  }
+  @keyframes breathe{0%,100%{opacity:.65}50%{opacity:1}}
+
+  .stage{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column}
+
+  /* top bar */
+  .bar{flex:0 0 auto;display:flex;align-items:center;gap:18px;padding:22px clamp(20px,5vw,56px)}
+  .mark{font-weight:800;font-size:21px;letter-spacing:-.04em;color:var(--text);display:flex;align-items:baseline;user-select:none}
+  .mark .dot{color:var(--blue)}
+  .track{flex:1;height:4px;border-radius:99px;background:var(--line);overflow:hidden}
+  .track>i{display:block;height:100%;width:10%;border-radius:99px;
+    background:linear-gradient(90deg,var(--blue),var(--blue-bright));
+    transition:width .55s var(--ease), background .5s ease}
+  .track.done>i{background:linear-gradient(90deg,var(--green),#5BE57D)}
+  .count{flex:0 0 auto;font-size:13px;font-weight:600;color:var(--text-soft);font-variant-numeric:tabular-nums;min-width:74px;text-align:right;letter-spacing:.01em}
+
+  .scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+  .wrap{width:100%;max-width:660px;margin:auto;padding:clamp(8px,3vh,28px) clamp(20px,5vw,56px) 40px}
+
+  /* directional scene motion — heavier, no bounce */
+  .scene{animation:enterF .42s var(--ease) both}
+  .scene.back{animation:enterB .42s var(--ease) both}
+  @keyframes enterF{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes enterB{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+  .scene.leaving{animation:leaveF .24s ease forwards}
+  .scene.leaving.back{animation:leaveB .24s ease forwards}
+  @keyframes leaveF{to{opacity:0;transform:translateY(-14px)}}
+  @keyframes leaveB{to{opacity:0;transform:translateY(14px)}}
+
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;font-weight:600;color:var(--text-soft);letter-spacing:.06em;text-transform:uppercase;margin-bottom:20px}
+  .eyebrow .idx{font-weight:700;background:var(--blue-soft);color:var(--blue-bright);border:1px solid rgba(45,107,255,.3);border-radius:7px;padding:3px 9px;font-size:12px;font-variant-numeric:tabular-nums;letter-spacing:0}
+  h1.q{font-weight:800;font-size:clamp(27px,4.6vw,41px);line-height:1.08;letter-spacing:-.03em;color:var(--text);margin-bottom:14px}
+  .help{font-size:16px;line-height:1.55;color:var(--text-soft);margin-bottom:30px;max-width:48ch}
+
+  .field input[type=text],.field textarea{
+    width:100%;font-family:inherit;font-size:18px;color:var(--text);
+    background:var(--card);border:1.5px solid var(--line-strong);border-radius:14px;
+    padding:17px 18px;transition:border-color .2s,box-shadow .2s;
+  }
+  .field textarea{resize:none;min-height:128px;line-height:1.5}
+  .field input::placeholder,.field textarea::placeholder{color:var(--text-dim)}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px var(--blue-soft)}
+
+  .opts{display:flex;flex-direction:column;gap:11px}
+  .opt{display:flex;align-items:center;gap:14px;cursor:pointer;background:var(--card);
+    border:1.5px solid var(--line);border-radius:14px;padding:16px 17px;font-size:16.5px;font-weight:500;
+    color:var(--text);transition:border-color .18s,background .18s,transform .12s;text-align:left;width:100%;font-family:inherit}
+  .opt:hover{border-color:var(--line-strong);background:var(--card-hover)}
+  .opt:active{transform:scale(.992)}
+  .opt .key{flex:0 0 auto;width:27px;height:27px;border-radius:8px;border:1.5px solid var(--line-strong);
+    background:#0a0c12;display:grid;place-items:center;font-size:12.5px;font-weight:700;color:var(--text-dim);transition:all .18s}
+  .opt.sel{border-color:var(--blue);background:var(--blue-soft)}
+  .opt.sel .key{background:var(--blue);border-color:var(--blue);color:#fff}
+  .opt.sel .key .ch{display:none}
+  .opt.sel .key::before{content:"";width:11px;height:7px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+
+  .seg{display:inline-flex;background:#0a0c12;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-bottom:18px}
+  .seg button{font-family:inherit;font-size:14px;font-weight:600;color:var(--text-soft);border:none;background:transparent;
+    border-radius:9px;padding:9px 16px;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:8px}
+  .seg button svg{width:15px;height:15px;fill:currentColor}
+  .seg button.on{background:var(--blue);color:#fff}
+
+  .rec{background:var(--card);border:1.5px solid var(--line-strong);border-radius:14px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+  .recbtn{width:70px;height:70px;border-radius:50%;border:none;cursor:pointer;background:var(--blue);color:#fff;display:grid;place-items:center;box-shadow:0 8px 26px rgba(45,107,255,.4);transition:transform .15s,background .2s}
+  .recbtn:hover{transform:scale(1.05)}
+  .recbtn svg{width:28px;height:28px;fill:#fff}
+  .recbtn.live{background:var(--blue-deep);animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(45,107,255,.45)}50%{box-shadow:0 0 0 16px rgba(45,107,255,0)}}
+  .rec .stat{font-size:15px;font-weight:600;color:var(--text)}
+  .rec .sub{font-size:13.5px;color:var(--text-soft);max-width:34ch}
+  .rec .time{font-variant-numeric:tabular-nums;font-weight:800;font-size:26px;color:var(--text);letter-spacing:-.02em}
+  .rec audio{width:100%;max-width:340px;margin-top:4px;filter:invert(.9) hue-rotate(180deg)}
+  .relink{background:none;border:none;color:var(--blue-bright);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+  .bonus{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+  .bonus>span{display:block;font-size:14.5px;color:var(--text-soft);font-weight:500;margin-bottom:11px}
+  .drop{border:1.6px dashed var(--line-strong);border-radius:14px;background:var(--card);padding:13px 17px;text-align:center;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:9px;font-size:15px;font-weight:600;color:var(--text-soft)}
+  .drop:hover{border-color:var(--blue);color:var(--blue-bright);background:var(--card-hover)}
+  .drop svg{width:17px;height:17px;fill:currentColor}
+  .thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .thumb{position:relative;width:78px;height:78px;border-radius:12px;overflow:hidden;border:1.5px solid var(--line)}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(5,7,14,.82);color:#fff;font-size:13px;cursor:pointer;line-height:1;display:grid;place-items:center}
+
+  .foot{flex:0 0 auto;display:flex;align-items:center;gap:16px;justify-content:flex-end;padding:16px clamp(20px,5vw,56px) 24px}
+  .foot .left{margin-right:auto;display:flex;align-items:center;gap:16px}
+  .back{background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;color:var(--text-soft);padding:8px 4px;transition:color .15s}
+  .back:hover{color:var(--text)}
+  .skip{background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:500;color:var(--text-dim);text-decoration:underline;text-underline-offset:3px}
+  .skip:hover{color:var(--text-soft)}
+  .cta{font-family:inherit;font-size:16px;font-weight:600;color:#fff;background:var(--blue);border:none;border-radius:13px;padding:15px 26px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:transform .12s,background .2s,opacity .2s,box-shadow .2s;box-shadow:0 6px 20px rgba(45,107,255,.28)}
+  .cta:hover{background:var(--blue-bright);transform:translateY(-1px)}
+  .cta:disabled{opacity:.35;cursor:not-allowed;transform:none;background:var(--blue);box-shadow:none}
+  .cta.go{background:var(--green);color:#04210d;box-shadow:0 6px 20px rgba(52,216,90,.3)}
+  .cta.go:hover{background:#48e06d}
+  .enter{font-size:12.5px;color:var(--text-dim);font-weight:500}
+  .enter b{font-family:inherit;background:#0a0c12;border:1px solid var(--line);padding:2px 7px;border-radius:6px;font-weight:600;color:var(--text-soft)}
+
+  /* welcome + done */
+  .center{display:flex;flex-direction:column;align-items:flex-start;text-align:left}
+  .pill{display:inline-flex;align-items:center;gap:9px;background:var(--blue-soft);color:var(--blue-bright);border:1px solid rgba(45,107,255,.28);font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:99px;margin-bottom:26px;letter-spacing:.01em}
+  .pill .d{width:6px;height:6px;border-radius:50%;background:var(--blue-bright)}
+  .pill.green{background:var(--green-soft);color:var(--green);border-color:rgba(52,216,90,.3)}
+  .pill.green .d{background:var(--green)}
+  .big{font-weight:800;letter-spacing:-.045em;font-size:clamp(34px,6.6vw,58px);line-height:1.0;margin-bottom:20px}
+  .big .accent{color:var(--blue)}
+  .lede{font-size:18px;line-height:1.55;color:var(--text-soft);max-width:46ch;margin-bottom:28px}
+  .trust{font-size:13px;color:var(--text-dim);margin-bottom:22px;letter-spacing:.01em}
+  .meta{display:flex;gap:30px;flex-wrap:wrap;margin-top:26px;padding-top:24px;border-top:1px solid var(--line)}
+  .meta div{font-size:13px;color:var(--text-soft)}
+  .meta b{display:block;font-weight:800;font-size:23px;color:var(--text);letter-spacing:-.03em;margin-bottom:2px}
+  .logos{margin-top:18px;font-size:12.5px;color:var(--text-dim);letter-spacing:.04em;line-height:1.7}
+  .logos b{color:var(--text-soft);font-weight:600}
+
+  .checkwrap{width:64px;height:64px;border-radius:50%;background:var(--green-soft);border:1.5px solid rgba(52,216,90,.35);display:grid;place-items:center;margin-bottom:22px;animation:bloom .55s var(--ease) both}
+  @keyframes bloom{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+  .checkwrap svg{width:30px;height:30px;fill:none;stroke:var(--green);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;stroke-dashoffset:30;animation:draw .5s .35s ease forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+
+  @media (max-width:520px){
+    .bar{gap:12px;padding:16px 20px}
+    .count{min-width:58px;font-size:12px}
+    .foot{flex-wrap:wrap;gap:10px}
+    .enter{display:none}
+    .meta{gap:20px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="bar">
+    <div class="mark">CO-B<span class="dot">.</span></div>
+    <div class="track" id="track" hidden><i id="fill"></i></div>
+    <div class="count" id="count" hidden></div>
+  </div>
+  <div class="scroll"><div class="wrap"><div id="scene"></div></div></div>
+  <div class="foot" id="foot" hidden>
+    <div class="left">
+      <button class="back" id="back" hidden>← Voltar</button>
+      <button class="skip" id="skip" hidden>Pular</button>
+    </div>
+    <span class="enter" id="enterhint" hidden>aperte <b>Enter ↵</b></span>
+    <button class="cta" id="next"></button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const flow = [
+    { id:"oque", type:"long", n:1, eyebrow:"Sobre você",
+      q:"Para começar — o que você faz e para quem?",
+      help:"Pode escrever do seu jeito. É só para entendermos o seu negócio antes de qualquer coisa.",
+      ph:"Ex.: Sou psicóloga, atendo adultos com ansiedade, presencial e online…" },
+
+    { id:"canal", type:"single", n:2, eyebrow:"Como você vende",
+      q:"Como as pessoas compram de você hoje?",
+      help:"Escolha a opção mais parecida com o seu dia a dia.",
+      options:["Agendam comigo presencialmente","Agendam comigo online (atendimento à distância)","Compram numa loja virtual (e-commerce)","Compram um curso, mentoria ou infoproduto","É de outro jeito"]},
+
+    { id:"investe", type:"single", n:3, eyebrow:"Histórico",
+      q:"Você já investe em anúncios?",
+      help:"Sem julgamento — só para sabermos de onde partimos.",
+      options:["Invisto hoje","Já investi e parei","Nunca investi"]},
+
+    { id:"diagnostico", type:"longaudio", n:4, eyebrow:"O que aconteceu",
+      q:"Conte para nós: o que funcionou e o que travou?",
+      help:"Esta é a pergunta mais importante. Pode escrever — ou, se preferir, gravar um áudio rápido falando do seu jeito.",
+      ph:"Ex.: no início dava resultado, depois foi caindo e ninguém me explicava por quê…",
+      skippable:true,
+      showIf:(a)=> a.investe === "Invisto hoje" || a.investe === "Já investi e parei" },
+
+    { id:"verba", type:"single", n:5, eyebrow:"Investimento",
+      q:"Quanto você investe (ou pretende investir) por mês em anúncios?",
+      help:"É a verba que vai para a plataforma (Google/Meta), separada do nosso trabalho.",
+      options:["Até R$ 1.500 / mês","R$ 1.500 a R$ 3.000","R$ 3.000 a R$ 8.000","R$ 8.000 a R$ 15.000","Acima de R$ 15.000","Ainda não sei dizer"]},
+
+    { id:"ticket", type:"short", n:6, eyebrow:"Sua oferta",
+      q:"Quanto vale, em média, uma venda ou um atendimento seu?",
+      help:"Um número aproximado já ajuda muito.",
+      ph:"Ex.: R$ 250 a sessão · R$ 2.400 o pacote…" },
+
+    { id:"organiza", type:"single", n:7, eyebrow:"Organização",
+      q:"Onde você organiza seus contatos e clientes hoje?",
+      help:"Isso nos diz o quanto da sua base já está sob controle.",
+      options:["Num CRM","Numa planilha","Na agenda / no WhatsApp","Ainda não organizo"]},
+
+    { id:"fornecedor", type:"single", n:8, eyebrow:"Hoje",
+      q:"Quem cuida do seu marketing agora?",
+      help:null,
+      options:["Eu mesmo(a)","Um freelancer","Outra agência","Ninguém no momento"]},
+
+    { id:"objetivo", type:"long", n:9, eyebrow:"Para onde vamos",
+      q:"Qual o seu maior objetivo nos próximos 6 meses?",
+      help:"Pode ser ambicioso e também bem concreto.",
+      ph:"Ex.: encher a agenda, ter previsibilidade, parar de depender de indicação…" },
+
+    { id:"presenca", type:"presenca", n:10, eyebrow:"Quase lá",
+      q:"Onde a gente te encontra na internet?",
+      help:"Seu site ou Instagram já mostra sua marca, seus produtos e seu jeito — é com isso que a proposta fica com a sua cara, sem imagem genérica.",
+      ph:"seusite.com.br  ou  @seu_instagram",
+      skippable:true }
+  ];
+
+  const state = { answers:{}, files:[], audio:null, mode:"text", screen:"welcome", qi:0, name:"", dir:1 };
+  let media = { rec:null, stream:null, chunks:[], t:null, secs:0 };
+
+  // ---- envio para o ClickUp (via Netlify Function) ----
+  const ENDPOINT = "/.netlify/functions/lead";  // ajuste se o form rodar em outro domínio
+  const DEMO = true;  // << deixe true para testar a experiência; vire para false quando a função estiver no ar
+
+  function blobToDataURL(blob){ return new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); }); }
+  async function downscale(file,max=1600,q=.82){
+    try{
+      const img=await createImageBitmap(file); let w=img.width,h=img.height;
+      if(Math.max(w,h)>max){ const s=max/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      return c.toDataURL('image/jpeg',q);
+    }catch(e){ return await blobToDataURL(file); }
+  }
+  async function submitLead(){
+    const fotos=[];
+    for(const f of state.files){ fotos.push({ name:(f.name||'foto').replace(/\.[^.]+$/,'')+'.jpg', type:'image/jpeg', dataUrl:await downscale(f) }); }
+    let audio=null;
+    if(state.audio){ audio={ name:'diagnostico.webm', type:state.audio.blob.type||'audio/webm', secs:state.audio.secs, dataUrl:await blobToDataURL(state.audio.blob) }; }
+    const payload={ nome:state.name, respostas:state.answers, audio, fotos, enviado_em:new Date().toISOString() };
+    if(DEMO){ console.log('[COB intake] DEMO — payload que iria pro ClickUp:', payload); await new Promise(r=>setTimeout(r,700)); return true; }
+    const res=await fetch(ENDPOINT,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return true;
+  }
+  async function doSubmit(){
+    $next.disabled=true; $next.innerHTML='Enviando…'; $skip.hidden=true; $back.hidden=true;
+    const old=document.getElementById('senderr'); if(old) old.remove();
+    try{ await submitLead(); renderDone(); }
+    catch(e){
+      console.error('[COB intake] falha no envio:',e);
+      $next.disabled=false; $next.className='cta go'; $next.innerHTML='Tentar enviar de novo →'; $next.onclick=()=>doSubmit(); $back.hidden=false;
+      const note=document.createElement('p'); note.id='senderr';
+      note.style.cssText='color:#9AA1B4;font-size:14px;margin-top:18px;line-height:1.5';
+      note.textContent='Não consegui enviar agora. Confira a conexão e tente de novo — suas respostas não se perderam.';
+      $scene.firstElementChild.appendChild(note);
+    }
+  }
+
+  const $scene=document.getElementById('scene'), $foot=document.getElementById('foot'),
+        $next=document.getElementById('next'), $back=document.getElementById('back'),
+        $skip=document.getElementById('skip'), $track=document.getElementById('track'),
+        $fill=document.getElementById('fill'), $count=document.getElementById('count'),
+        $enter=document.getElementById('enterhint');
+
+  const visible = () => flow.filter(q => !q.showIf || q.showIf(state.answers));
+
+  function setScene(html){
+    const old=$scene.firstElementChild;
+    if(old){ old.classList.add('leaving'); old.classList.toggle('back',state.dir<0); }
+    const tmp=document.createElement('div');
+    tmp.className='scene'+(state.dir<0?' back':'');
+    tmp.innerHTML=html;
+    setTimeout(()=>{ $scene.innerHTML=''; $scene.appendChild(tmp);
+      const f=tmp.querySelector('input,textarea'); if(f) setTimeout(()=>f.focus(),60);
+    }, old?160:0);
+  }
+
+  function renderWelcome(){
+    state.screen='welcome'; $foot.hidden=true; $track.hidden=true; $count.hidden=true; $track.classList.remove('done');
+    setScene(`
+      <div class="center">
+        <span class="pill"><span class="d"></span>Leva 3 minutos · sem reunião</span>
+        <h1 class="big">Vamos montar a sua <span class="accent">proposta</span>.</h1>
+        <p class="lede">Sem ligação de vendedor e sem agenda. Você responde no seu tempo e a nossa equipe prepara uma proposta sob medida para o seu momento.</p>
+        <div class="field" style="width:100%;max-width:420px">
+          <input type="text" id="nm" placeholder="Como você se chama?" autocomplete="given-name">
+        </div>
+        <div class="meta">
+          <div><b>14+</b> anos de mercado</div>
+          <div><b>300+</b> empresas atendidas</div>
+        </div>
+        <div class="logos"><b>Samsung · Grendene · Beauty'in · Hard Rock Café · Melissa · Cyrela</b></div>
+      </div>`);
+    setTimeout(()=>{
+      const nm=document.getElementById('nm');
+      $foot.hidden=false; $back.hidden=true; $skip.hidden=true; $enter.hidden=false;
+      $next.className='cta'; $next.disabled=false; $next.innerHTML='Começar →';
+      $next.onclick=()=>{ state.name=(nm.value||'').trim(); startFlow(); };
+      nm.addEventListener('keydown',e=>{ if(e.key==='Enter'){state.name=nm.value.trim();startFlow();} });
+    },200);
+  }
+
+  function startFlow(){ state.screen='flow'; state.dir=1; state.qi=0; renderQ(); }
+
+  function renderQ(){
+    const list=visible();
+    if(state.qi>=list.length) return renderDone();
+    const q=list[state.qi], total=list.length;
+    $track.hidden=false; $count.hidden=false; $foot.hidden=false; $track.classList.remove('done');
+    $fill.style.width=Math.round(10 + 90*(state.qi/total))+'%';   // head-start em 10%
+    $count.textContent=`${state.qi+1} de ${total}`;
+    $back.hidden=false; $back.onclick=goBack;
+    $enter.hidden=!(q.type==='short'||q.type==='long'||q.type==='longaudio'||q.type==='presenca');
+
+    let inner='';
+    const eb=q.eyebrow?`<span class="eyebrow"><span class="idx">${String(q.n).padStart(2,'0')}</span>${q.eyebrow}</span>`:'';
+    const help=q.help?`<p class="help">${q.help}</p>`:'';
+
+    if(q.type==='short'||q.type==='long'){
+      const v=state.answers[q.id]||'';
+      inner = q.type==='short'
+        ? `<div class="field"><input type="text" id="inp" placeholder="${q.ph||''}" value="${esc(v)}"></div>`
+        : `<div class="field"><textarea id="inp" placeholder="${q.ph||''}">${esc(v)}</textarea></div>`;
+    }
+    else if(q.type==='single'){
+      inner=`<div class="opts" id="opts">`+q.options.map((o,i)=>{
+        const sel=state.answers[q.id]===o?' sel':''; const key=String.fromCharCode(65+i);
+        return `<button class="opt${sel}" data-v="${esc(o)}"><span class="key"><span class="ch">${key}</span></span>${o}</button>`;
+      }).join('')+`</div>`;
+    }
+    else if(q.type==='longaudio'){
+      inner=`<div class="seg" id="seg">
+          <button data-m="text" class="${state.mode==='text'?'on':''}"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>Escrever</button>
+          <button data-m="audio" class="${state.mode==='audio'?'on':''}"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg>Gravar áudio</button>
+        </div><div id="modebox"></div>`;
+    }
+    else if(q.type==='presenca'){
+      const v=state.answers[q.id]||'';
+      inner=`<div class="field"><input type="text" id="inp" inputmode="url" placeholder="${q.ph||''}" value="${esc(v)}"></div>
+        <div class="bonus">
+          <span>Tem uma foto boa da empresa ou de um produto? Pode anexar — é opcional.</span>
+          <div class="drop" id="drop"><svg viewBox="0 0 24 24"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z"/></svg>Anexar foto</div>
+          <input type="file" id="file" accept="image/*" multiple hidden>
+          <div class="thumbs" id="thumbs"></div>
+        </div>`;
+    }
+
+    setScene(eb+`<h1 class="q">${q.q}</h1>`+help+inner);
+    setTimeout(()=>wire(q),200);
+    updateCTA(q);
+  }
+
+  function wire(q){
+    if(q.type==='single'){
+      document.querySelectorAll('#opts .opt').forEach(b=>{
+        b.onclick=()=>{ state.answers[q.id]=b.dataset.v;
+          document.querySelectorAll('#opts .opt').forEach(x=>x.classList.remove('sel'));
+          b.classList.add('sel'); updateCTA(q); setTimeout(()=>advance(),340);
+        };
+      });
+    }
+    if(q.type==='short'||q.type==='long'){
+      const inp=document.getElementById('inp');
+      inp.addEventListener('input',()=>{state.answers[q.id]=inp.value;updateCTA(q);});
+      inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&(q.type==='short'||!e.shiftKey)){e.preventDefault();if(canAdvance(q))advance();} });
+    }
+    if(q.type==='longaudio'){
+      document.querySelectorAll('#seg button').forEach(b=>{
+        b.onclick=()=>{ state.mode=b.dataset.m;
+          document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x.dataset.m===state.mode));
+          renderMode(q); updateCTA(q);
+        };
+      });
+      renderMode(q);
+    }
+    if(q.type==='presenca'){
+      const inp=document.getElementById('inp');
+      inp.addEventListener('input',()=>{state.answers[q.id]=inp.value;updateCTA(q);});
+      inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();advance();}});
+      const drop=document.getElementById('drop'), file=document.getElementById('file');
+      drop.onclick=()=>file.click();
+      file.onchange=()=>{[...file.files].forEach(f=>{if(f.type.startsWith('image/'))state.files.push(f);});renderThumbs(q);};
+      renderThumbs(q);
+    }
+  }
+
+  function renderMode(q){
+    const box=document.getElementById('modebox');
+    if(state.mode==='text'){
+      stopStream();
+      const v=state.answers[q.id]||'';
+      box.innerHTML=`<div class="field"><textarea id="inp" placeholder="${q.ph||''}">${esc(v)}</textarea></div>`;
+      const inp=document.getElementById('inp'); inp.focus();
+      inp.addEventListener('input',()=>{state.answers[q.id]=inp.value;updateCTA(q);});
+      inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(canAdvance(q))advance();}});
+    } else {
+      if(state.audio){
+        box.innerHTML=`<div class="rec"><div class="stat">Áudio gravado ✓</div><audio controls src="${state.audio.url}"></audio><button class="relink" id="redo">Regravar</button></div>`;
+        document.getElementById('redo').onclick=()=>{clearAudio();renderMode(q);updateCTA(q);};
+      } else {
+        box.innerHTML=`<div class="rec">
+            <button class="recbtn" id="recbtn" aria-label="Gravar"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg></button>
+            <div class="stat" id="recstat">Toque para gravar</div>
+            <div class="sub">Fale do seu jeito, sem pressa. Nós transcrevemos depois.</div></div>`;
+        document.getElementById('recbtn').onclick=()=>toggleRec(q);
+      }
+    }
+  }
+
+  async function toggleRec(q){
+    const btn=document.getElementById('recbtn'), stat=document.getElementById('recstat');
+    if(media.rec && media.rec.state==='recording'){ media.rec.stop(); return; }
+    try{
+      media.stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      media.chunks=[]; media.secs=0; media.rec=new MediaRecorder(media.stream);
+      media.rec.ondataavailable=e=>{if(e.data.size)media.chunks.push(e.data);};
+      media.rec.onstop=()=>{ clearInterval(media.t);
+        const blob=new Blob(media.chunks,{type:media.rec.mimeType||'audio/webm'});
+        state.audio={blob,url:URL.createObjectURL(blob),secs:media.secs};
+        stopStream(); renderMode(q); updateCTA(q);
+      };
+      media.rec.start();
+      btn.classList.add('live'); btn.querySelector('svg').innerHTML='<rect x="7" y="7" width="10" height="10" rx="2"/>';
+      stat.innerHTML='<span class="time" id="tm">0:00</span><br>Gravando… toque para parar';
+      media.t=setInterval(()=>{media.secs++;const m=Math.floor(media.secs/60),s=media.secs%60;
+        const tm=document.getElementById('tm'); if(tm)tm.textContent=`${m}:${String(s).padStart(2,'0')}`;},1000);
+    }catch(err){
+      stat.textContent='Não consegui acessar o microfone aqui.';
+      const note=document.createElement('div'); note.className='sub'; note.style.marginTop='6px';
+      note.innerHTML='Sem problema — <b style="color:var(--blue-bright);cursor:pointer" id="usetext">é só escrever</b>, funciona igual.';
+      document.getElementById('modebox').querySelector('.rec').appendChild(note);
+      document.getElementById('usetext').onclick=()=>{state.mode='text';
+        document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x.dataset.m==='text'));
+        renderMode(q);updateCTA(q);};
+    }
+  }
+  function stopStream(){ if(media.stream){media.stream.getTracks().forEach(t=>t.stop());media.stream=null;} }
+  function clearAudio(){ if(state.audio){URL.revokeObjectURL(state.audio.url);state.audio=null;} }
+
+  function renderThumbs(q){
+    const wrap=document.getElementById('thumbs'); wrap.innerHTML='';
+    state.files.forEach((f,i)=>{
+      const url=URL.createObjectURL(f);
+      const d=document.createElement('div'); d.className='thumb';
+      d.innerHTML=`<img src="${url}"><button data-i="${i}" aria-label="remover">×</button>`;
+      d.querySelector('button').onclick=()=>{state.files.splice(i,1);renderThumbs(q);updateCTA(q);};
+      wrap.appendChild(d);
+    });
+    updateCTA(q);
+  }
+
+  function canAdvance(q){
+    if(q.skippable) return true;
+    if(q.type==='single') return !!state.answers[q.id];
+    if(q.type==='short'||q.type==='long') return (state.answers[q.id]||'').trim().length>0;
+    if(q.type==='longaudio') return state.mode==='audio'?!!state.audio:(state.answers[q.id]||'').trim().length>0;
+    return true;
+  }
+  function updateCTA(q){
+    const list=visible(), last=state.qi===list.length-1;
+    $next.className='cta'+(last?' go':'');
+    $next.innerHTML=last?'Enviar e receber proposta →':'Continuar →';
+    const ok=canAdvance(q);
+    $next.disabled=!ok; $next.onclick=ok?()=>advance():null;
+    $skip.hidden=!q.skippable||last; $skip.onclick=()=>advance(true);
+  }
+  function advance(skipped){
+    const list=visible(), q=list[state.qi];
+    if(!skipped && !canAdvance(q)) return;
+    if(skipped){ delete state.answers[q.id]; }
+    if(state.qi===list.length-1){ return doSubmit(); }   // última pergunta → envia pro ClickUp
+    state.dir=1; state.qi++;
+    renderQ();
+  }
+  function goBack(){
+    state.dir=-1;
+    if(state.qi===0){ renderWelcome(); return; }
+    state.qi--; renderQ();
+  }
+
+  function renderDone(){
+    state.screen='done'; stopStream();
+    $foot.hidden=true; $back.hidden=true; $skip.hidden=true;
+    $track.classList.add('done'); $fill.style.width='100%'; $count.textContent='concluído';
+    const nm=state.name?`, ${esc(state.name)}`:'';
+    state.dir=1;
+    setScene(`
+      <div class="center">
+        <div class="checkwrap"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+        <h1 class="big">Recebemos tudo${nm}.</h1>
+        <p class="lede">Agora é com a nossa equipe. Vamos estudar o seu mercado e preparar uma proposta sob medida — você recebe o link por aqui para ver no seu tempo, sem reunião.</p>
+        <span class="pill green"><span class="d"></span>Sua proposta está sendo preparada</span>
+      </div>`);
+    console.log('[COB intake] respostas:', {
+      nome: state.name, ...state.answers,
+      link_presenca: state.answers.presenca || null,
+      fotos: state.files.map(f=>f.name),
+      audio_diagnostico: state.audio ? `${state.audio.secs}s` : null
+    });
+  }
+
+  function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  renderWelcome();
+})();
+</script>
+</body>
+</html>
